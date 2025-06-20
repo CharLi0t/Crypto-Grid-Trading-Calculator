@@ -268,45 +268,57 @@
     </div>
 
     <script>
-        function calculateGrid() {
-            // Get input values
-            const startPrice = parseFloat(document.getElementById('startPrice').value);
-            const endPrice = parseFloat(document.getElementById('endPrice').value);
-            const volumePerGrid = parseFloat(document.getElementById('volumePerGrid').value);
-            const gridSpacing = parseFloat(document.getElementById('gridSpacing').value);
+function calculateGrid() {
+    // รับค่าจาก input
+    const startPrice = parseFloat(document.getElementById('startPrice').value);
+    const endPrice = parseFloat(document.getElementById('endPrice').value);
+    const volumePerGrid = parseFloat(document.getElementById('volumePerGrid').value);
+    const gridSpacing = parseFloat(document.getElementById('gridSpacing').value);
 
-            // Validation
-            if (!validateInputs(startPrice, endPrice, volumePerGrid, gridSpacing)) {
-                return;
-            }
+    if (!validateInputs(startPrice, endPrice, volumePerGrid, gridSpacing)) return;
 
-            // Calculate number of grids
-            const priceRange = startPrice - endPrice;
-            const totalGrids = Math.floor(priceRange / gridSpacing) + 1;
-            
-            // Generate grid data and calculate total capital
-            const gridData = [];
-            let totalCapitalRequired = 0;
-            
-            for (let i = 0; i < totalGrids; i++) {
-                const currentPrice = startPrice - (i * gridSpacing);
-                const capitalForThisGrid = volumePerGrid * currentPrice;
-                const percentage = ((currentPrice - endPrice) / (startPrice - endPrice)) * 100;
-                
-                totalCapitalRequired += capitalForThisGrid;
-                
-                gridData.push({
-                    order: i + 1,
-                    price: currentPrice.toFixed(3),
-                    volume: volumePerGrid.toFixed(0),
-                    capital: capitalForThisGrid.toFixed(2),
-                    percentage: percentage.toFixed(1)
-                });
-            }
+    const gridData = [];
+    let totalCapitalRequired = 0;
+    let i = 0;
+    let currentPrice = startPrice;
 
-            // Display results
-            displayResults(totalGrids, totalCapitalRequired, volumePerGrid, gridData);
-        }
+    while (currentPrice > endPrice + 1e-8) { // ให้เลย endPrice เล็กน้อย
+        const capitalForThisGrid = volumePerGrid * currentPrice;
+        const percentage = ((currentPrice - endPrice) / (startPrice - endPrice)) * 100;
+        totalCapitalRequired += capitalForThisGrid;
+
+        gridData.push({
+            order: i + 1,
+            price: currentPrice.toFixed(3),
+            volume: volumePerGrid.toFixed(0),
+            capital: capitalForThisGrid.toFixed(2),
+            percentage: percentage.toFixed(1)
+        });
+
+        i++;
+        currentPrice = startPrice - (i * gridSpacing);
+    }
+
+    // **เพิ่มแถวสุดท้ายเป็น endPrice เสมอ**
+    if (Math.abs(currentPrice - endPrice) > 1e-6) {
+        currentPrice = endPrice;
+    }
+    const capitalForThisGrid = volumePerGrid * currentPrice;
+    const percentage = ((currentPrice - endPrice) / (startPrice - endPrice)) * 100;
+    totalCapitalRequired += capitalForThisGrid;
+
+    gridData.push({
+        order: gridData.length + 1,
+        price: currentPrice.toFixed(3),
+        volume: volumePerGrid.toFixed(0),
+        capital: capitalForThisGrid.toFixed(2),
+        percentage: percentage.toFixed(1)
+    });
+
+    const totalGrids = gridData.length;
+    displayResults(totalGrids, totalCapitalRequired, volumePerGrid, gridData);
+}
+
 
         function validateInputs(startPrice, endPrice, volumePerGrid, gridSpacing) {
             if (isNaN(startPrice) || isNaN(endPrice) || isNaN(volumePerGrid) || isNaN(gridSpacing)) {
