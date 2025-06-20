@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Grid Trading Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .results-section {
+            padding: 30px;
+            display: none;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e3f2fd;
+            transition: background 0.3s ease;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Crypto Grid Trading Calculator</h1>
+            <p>คำนวณการแบ่งเงินลงทุนในระบบ Grid Trading อย่างแม่นยำ</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="startPrice">ราคาเริ่มต้น ($)</label>
+                    <input type="number" id="startPrice" step="0.001" placeholder="เช่น 0.60">
+                </div>
+                <div class="input-group">
+                    <label for="endPrice">ราคาสุดท้าย ($)</label>
+                    <input type="number" id="endPrice" step="0.001" placeholder="เช่น 0.01">
+                </div>
+                <div class="input-group">
+                    <label for="volumePerGrid">Volume แต่ละ Grid</label>
+                    <input type="number" id="volumePerGrid" step="0.01" placeholder="เช่น 100">
+                </div>
+                <div class="input-group">
+                    <label for="gridSpacing">ระยะห่าง Grid ($)</label>
+                    <input type="number" id="gridSpacing" step="0.001" placeholder="เช่น 0.01">
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateGrid()">🔥 คำนวณ Grid Trading</button>
+            <div class="error" id="errorMessage"></div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>เงินทุนรวมทั้งหมด</h3>
+                    <div class="value" id="totalCapitalRequired">$0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>จำนวน Grid ทั้งหมด</h3>
+                    <div class="value" id="totalGrids">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Volume ต่อ Grid</h3>
+                    <div class="value" id="volumePerGridDisplay">0</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>ราคา ($)</th>
+                            <th>Volume</th>
+                            <th>เงินทุน ($)</th>
+                            <th>เปอร์เซ็นต์</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gridTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateGrid() {
+            // Get input values
+            const startPrice = parseFloat(document.getElementById('startPrice').value);
+            const endPrice = parseFloat(document.getElementById('endPrice').value);
+            const volumePerGrid = parseFloat(document.getElementById('volumePerGrid').value);
+            const gridSpacing = parseFloat(document.getElementById('gridSpacing').value);
+
+            // Validation
+            if (!validateInputs(startPrice, endPrice, volumePerGrid, gridSpacing)) {
+                return;
+            }
+
+            // Calculate number of grids
+            const priceRange = startPrice - endPrice;
+            const totalGrids = Math.floor(priceRange / gridSpacing) + 1;
+            
+            // Generate grid data and calculate total capital
+            const gridData = [];
+            let totalCapitalRequired = 0;
+            
+            for (let i = 0; i < totalGrids; i++) {
+                const currentPrice = startPrice - (i * gridSpacing);
+                const capitalForThisGrid = volumePerGrid * currentPrice;
+                const percentage = ((currentPrice - endPrice) / (startPrice - endPrice)) * 100;
+                
+                totalCapitalRequired += capitalForThisGrid;
+                
+                gridData.push({
+                    order: i + 1,
+                    price: currentPrice.toFixed(3),
+                    volume: volumePerGrid.toFixed(0),
+                    capital: capitalForThisGrid.toFixed(2),
+                    percentage: percentage.toFixed(1)
+                });
+            }
+
+            // Display results
+            displayResults(totalGrids, totalCapitalRequired, volumePerGrid, gridData);
+        }
+
+        function validateInputs(startPrice, endPrice, volumePerGrid, gridSpacing) {
+            if (isNaN(startPrice) || isNaN(endPrice) || isNaN(volumePerGrid) || isNaN(gridSpacing)) {
+                showError('กรุณากรอกข้อมูลให้ครบถ้วนและเป็นตัวเลข');
+                return false;
+            }
+            
+            if (startPrice <= endPrice) {
+                showError('ราคาเริ่มต้นต้องมากกว่าราคาสุดท้าย');
+                return false;
+            }
+            
+            if (volumePerGrid <= 0) {
+                showError('Volume แต่ละ Grid ต้องมากกว่า 0');
+                return false;
+            }
+            
+            if (gridSpacing <= 0) {
+                showError('ระยะห่าง Grid ต้องมากกว่า 0');
+                return false;
+            }
+            
+            if (gridSpacing >= (startPrice - endPrice)) {
+                showError('ระยะห่าง Grid ต้องน้อยกว่าช่วงราคา');
+                return false;
+            }
+            
+            hideError();
+            return true;
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function displayResults(totalGrids, totalCapitalRequired, volumePerGrid, gridData) {
+            // Update summary cards
+            document.getElementById('totalGrids').textContent = totalGrids.toLocaleString();
+            document.getElementById('totalCapitalRequired').textContent = '$' + totalCapitalRequired.toFixed(2);
+            document.getElementById('volumePerGridDisplay').textContent = volumePerGrid.toLocaleString();
+
+            // Generate table rows
+            const tableBody = document.getElementById('gridTableBody');
+            tableBody.innerHTML = '';
+            
+            gridData.forEach(grid => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${grid.order}</strong></td>
+                    <td><strong>$${grid.price}</strong></td>
+                    <td>${grid.volume}</td>
+                    <td>$${grid.capital}</td>
+                    <td>${grid.percentage}%</td>
+                `;
+            });
+
+            // Show results section
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Set default values
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('startPrice').value = '0.60';
+            document.getElementById('endPrice').value = '0.01';
+            document.getElementById('volumePerGrid').value = '100';
+            document.getElementById('gridSpacing').value = '0.01';
+        });
+
+        // Auto-calculate on Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateGrid();
+            }
+        });
+    </script>
+</body>
+</html>
